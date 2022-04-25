@@ -45,6 +45,7 @@ switch ($_REQUEST['instrument']) {
    $observ_checked = "checked";
 }
 
+
 $csv_data = [];
 read_csv_data($csv_data, $start_time, $end_time);
 // ---------------------------------------------------------------------------

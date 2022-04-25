@@ -2,21 +2,34 @@
 
 
 
-function table_HTML($csv_data, $instrument, $cur_time, $start_time, $end_time, $max_lines) {
+function table_HTML($csv_data, $instrument, $cur_time, $max_lines) {
 
-   $csv_data = [];
-   read_csv_data($csv_data, $start_time, $end_time);
+   //$csv_data = [];
+   // read_csv_data($csv_data, $start_time, $end_time);
    $table_html = table_header($instrument);
 
    $line = 0;
    $green_counter = 0;
-   $OBS_ID= get_first_OBS_ID($csv_data);
-   while ($OBS_ID != "") {
-      get_data($csv_data, $OBS_ID, $instrument, $data_line);
-      if ($instrument == "Observations") {
-         get_data($csv_data, $OBS_ID, "SUSI", $data_line);
-      }      
-      $line_background = get_color($cur_time, $data_line); 
+   // $OBS_ID= get_first_OBS_ID($csv_data);
+   //while ($OBS_ID != "") {
+   for ($i = 0; $i < count($csv_data); $i++) {
+      //csv_line_to_data_line($csv_data[$i], $data_line);
+      // get_data($csv_data, $OBS_ID, $instrument, $data_line);
+      /* if ($instrument == "Observations") {
+         //get_data($csv_data, $OBS_ID, "SUSI", $data_line);
+         csv_line_to_data_line($csv_data[$i], $data_line);
+      } */
+      if ($instrument != "Observations") {
+         if ($instrument != $csv_data[$i]['instrument']) {
+            continue;
+         }
+      } else {      
+         if ("SUSI" != $csv_data[$i]['instrument']) {
+            continue;
+         }
+      }       
+      
+      $line_background = get_color($cur_time, $csv_data[$i]); 
          
       if ($line_background == "light_green") {
          if ($green_counter % 2  == 0) {
@@ -24,13 +37,13 @@ function table_HTML($csv_data, $instrument, $cur_time, $start_time, $end_time, $
          }
          $green_counter++;
       }
-      if (substr($data_line['obs_id'],0,2) == "SC") { 
+      if (substr($csv_data[$i]['obs_id'],0,2) == "SC") { 
          $thumbnail_icon = "<img src='icon_thumbnail.png' width='15px' height='15px'>";
       } else {
          $thumbnail_icon = "";
       }
       
-      $table_html .= table_row($instrument, $data_line, $line_background, $thumbnail_icon);
+      $table_html .= table_row($instrument, $csv_data[$i], $line_background, $thumbnail_icon);
       if ($line > ($max_lines-1) ) {
          break;
       }
@@ -38,7 +51,7 @@ function table_HTML($csv_data, $instrument, $cur_time, $start_time, $end_time, $
 
       $table_html .= table_empty_row($instrument);
       
-      $OBS_ID = get_next_obs_id($csv_data, $OBS_ID);
+      // $OBS_ID = get_next_obs_id($csv_data, $OBS_ID);
    }
    $table_html .= "</table>\n";
    return $table_html;
@@ -103,21 +116,144 @@ function get_data($csv_data, $OBS_ID, $instrument, &$data_line) {
    return;
 }    
 
+function OBSOLETE_csv_line_to_data_line($csv_data_line, &$data_line) {
+   $splits = explode(",", $csv_data_line);
+   $data_line['obs_id']     = $splits[0];
+   $data_line['instrument'] = $splits[1];
+   
+   $data_line['start_time'] = $splits[2];
+   $data_line['end_time']   = $splits[3];
+   $data_line['xcen']       = $splits[4];
+   $data_line['ycen']       = $splits[5];
+   $data_line['xsize']      = $splits[6];
+   $data_line['ysize']      = $splits[6];
+   $data_line['obs_mode']   = $splits[8];
+   $data_line['roi']        = $splits[9];
+
+   $splits_date = explode("T", $data_line['start_time']);
+   $data_line['start_date'] = $splits_date[0];
+   $data_line['start_UT']   = $splits_date[1];
+   
+   $splits_date = explode("T", $data_line['end_time']);
+   $data_line['end_date'] = $splits_date[0];
+   $data_line['end_UT']   = $splits_date[1];
+   
+   $data_line['thumbnail'] = "";
+   $data_line['scan_speed'] = "unset";
+   
+   
+   return;
+}
+
 
 function read_csv_data(&$csv_data, $start_time, $end_time) {
    $file = fopen('example_data.csv', 'r');
    while (($line = fgets($file)) !== false) {
    
       $splits = explode(",", $line);
+      $data_line['obs_id']     = $splits[0];
+      $data_line['instrument'] = $splits[1];
+   
+      $data_line['start_time'] = $splits[2];
+      $data_line['end_time']   = $splits[3];
+      $data_line['xcen']       = $splits[4];
+      $data_line['ycen']       = $splits[5];
+      $data_line['xsize']      = $splits[6];
+      $data_line['ysize']      = $splits[6];
+      $data_line['obs_mode']   = $splits[8];
+      $data_line['roi']        = $splits[9];
+
+      $splits_date = explode("T", $data_line['start_time']);
+      $data_line['start_date'] = $splits_date[0];
+      $data_line['start_UT']   = $splits_date[1];
+      
+      $splits_date = explode("T", $data_line['end_time']);
+      $data_line['end_date'] = $splits_date[0];
+      $data_line['end_UT']   = $splits_date[1];
+      
+      $data_line['thumbnail'] = "";
+      $data_line['scan_speed'] = "unset";
+      
+      
       $data_start = $splits[2];
       $data_end   = $splits[3];
+      $data_instr = $splits[1];
       
-      if (($data_start >= $start_time) && ($data_end <= $end_time)) {
-         $csv_data[] = $line;
+      if (($data_line['start_time'] >= $start_time) && ($data_line['end_time'] <= $end_time)) {
+         $csv_data[] = $data_line;
       }
    }
    fclose($file);
 }
+
+function sort_csv_data(&$csv_data, $sort_on_ROI, $sort_on_OBs_ID) {
+   if ($sort_on_ROI == 'roi_asc') {
+      #usort($csv_data, 'sort_on_OBs_ID_asc');
+      usort($csv_data, 'sort_on_ROI_asc');
+   }
+   if ($sort_on_ROI == 'roi_desc') {
+      #usort($csv_data, 'sort_on_OBs_ID_desc');
+      usort($csv_data, 'sort_on_ROI_desc');
+   }
+   if ($sort_on_OBs_ID == 'obs_asc') {
+      usort($csv_data, 'sort_on_OBs_ID_asc');
+   }
+   if ($sort_on_OBs_ID == 'obs_desc') {
+      usort($csv_data, 'sort_on_OBs_ID_desc');
+   }
+}
+   
+function sort_on_ROI_asc($a, $b) {
+   //return strcmp(strtolower($a['roi']), strtolower($b['roi']));
+   $compare = strcmp(strtolower(trim($a['roi'])), strtolower(trim($b['roi'])));
+   if ($compare == 0) {
+      return sort_on_OBs_ID_asc($a, $b);
+   } else {
+      return $compare;
+   }
+}
+function sort_on_ROI_desc($a, $b) {
+   // return strcmp($b['roi'], $a['roi']);
+   $compare = strcmp(strtolower(trim($b['roi'])), strtolower(trim($a['roi'])));
+   if ($compare == 0) {
+      return sort_on_OBs_ID_desc($a, $b);
+   } else {
+      return $compare;
+   }
+   
+}
+function sort_on_OBs_ID_asc($a, $b) {
+   $splits_a = explode("_", $a['obs_id']);
+   $splits_b = explode("_", $b['obs_id']);
+   
+   $a_num = (int)filter_var($splits_a[1], FILTER_SANITIZE_NUMBER_INT);
+   $b_num = (int)filter_var($splits_b[1], FILTER_SANITIZE_NUMBER_INT);
+   
+   if ($a_num == $b_num) {
+      return strcmp(strtolower($splits_a[0]), strtolower($splits_b[0]));
+   }
+   if ($a_num > $b_num) return 1;
+   if ($a_num < $b_num) return -1;
+   
+   // return strcmp(strtolower($a['obs_id']), strtolower($b['obs_id']));
+}
+function sort_on_OBs_ID_desc($a, $b) {
+   $splits_a = explode("_", $a['obs_id']);
+   $splits_b = explode("_", $b['obs_id']);
+   
+   $a_num = (int)filter_var($splits_a[1], FILTER_SANITIZE_NUMBER_INT);
+   $b_num = (int)filter_var($splits_b[1], FILTER_SANITIZE_NUMBER_INT);
+   
+   if ($a_num == $b_num) {
+      return strcmp(strtolower($splits_b[0]), strtolower($splits_a[0]));
+   }
+   if ($a_num < $b_num) return 1;
+   if ($a_num > $b_num) return -1;
+
+   //return strcmp(strtolower($b['obs_id']), strtolower($a['obs_id']));
+}
+
+
 
 function get_color($cur_time, $data) {
    $start = $data['start_time'];

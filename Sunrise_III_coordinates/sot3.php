@@ -20,11 +20,23 @@ require 'sot3_Common.php';
 if (!isset($_GET['instrument'])) {
    $_GET['instrument'] = 'Observations';
 }
+if (!isset($_GET['sort_roi'])) {
+   $_GET['sort_roi'] = 'roi_off';
+}
+if (!isset($_GET['sort_obs'])) {
+   $_GET['sort_obs'] = 'obs_off';
+}
 
 $observ_checked = "";
 $susi_checked = "";
 $scip_checked = "";
 $tumag_checked = "";
+$roiasc_checked = "";
+$roidesc_checked = "";
+$obsasc_checked = "";
+$obsdesc_checked = "";
+$roioff_checked = "";
+$obsoff_checked = "";
 
 switch ($_GET['instrument']) {
    case "Observations" :
@@ -36,13 +48,32 @@ switch ($_GET['instrument']) {
    case "SCIP" :
    $scip_checked = "checked";
    break;
-   case "TUMAG" :
+   case "TuMag" :
    $tumag_checked = "checked";
    break;
    default :
    $observ_checked = "checked";
 }
-
+switch ($_GET['sort_roi']) {
+   case 'roi_asc' :
+   $roiasc_checked = "checked";
+   break;
+   case 'roi_desc' :
+   $roidesc_checked = "checked";
+   break;
+   default :
+   $roioff_checked = "checked";
+}
+switch ($_GET['sort_obs']) {
+   case 'obs_asc' :
+   $obsasc_checked = "checked";
+   break;
+   case 'obs_desc' :
+   $obsdesc_checked = "checked";
+   break;
+   default :
+   $obsoff_checked = "checked";
+}
 
 
 if (isset($_GET['cur_time'])) {
@@ -69,35 +100,57 @@ if (isset($_GET['end_time'])) {
 <span style='background:#eeeeee; border-top:0px; xposition: fixed; width: 100%'> 
 <h1>Sunrise III Co-observation Data Resource</h1>
 <form action='sot3.php' method='get' id='options_form'>
-  <label>Current Time:</label> <input type='datetime-local' name='cur_time' value='<?php echo $cur_time; ?>'>
-  <label>Start Data Time:</label> <input type='datetime-local' name='start_time' value='<?php echo $start_time; ?>'>
-  <label>End Data Time:</label> <input type='datetime-local' name='end_time' value='<?php echo $end_time; ?>'>
-<br>
-   <input type='radio' id='ins_obs' name='instrument' value='Observations' <?php echo $observ_checked; ?> onchange='document.getElementById("options_form").submit();' >
-   <label for='ins_obs'>Observations</label><br>
-   <input type='radio' id='ins_susi' name='instrument' value='SUSI' <?php echo $susi_checked; ?> onchange='document.getElementById("options_form").submit();' >
-   <label for='ins_susi'>SUSI</label><br>
-   <input type='radio' id='ins_scip' name='instrument' value='SCIP' <?php echo $scip_checked; ?> onchange='document.getElementById("options_form").submit();' >
-   <label for='ins_scip'>SCIP</label><br>
-   <input type='radio' id='ins_tumag' name='instrument' value='TUMAG' <?php echo $tumag_checked; ?> onchange='document.getElementById("options_form").submit();' >
-   <label for='ins_obs'>TuMag</label><br>
+  <table width='50%'>
+    <tr>
+      <td><label>Current Time:</label><input type='datetime-local' name='cur_time' value='<?php echo $cur_time; ?>'></td>
+      <td><label>Start Data Time:</label><input type='datetime-local' name='start_time' value='<?php echo $start_time; ?>'></td>
+      <td><label>End Data Time:</label><input type='datetime-local' name='end_time' value='<?php echo $end_time; ?>'></td>
+    </tr>
+    <tr>
+     <td><input type='radio' id='ins_obs' name='instrument' value='Observations' <?php echo $observ_checked; ?>  onchange='document.getElementById("options_form").submit();' >
+     <label for='ins_obs'>Observations</label></td>
+     <td><input type='radio' id='sor_obsoff' name='sort_obs' value='obs_off' <?php echo $obsoff_checked; ?>  onchange='document.getElementById("options_form").submit();' >
+     <label for='sor_obsoff'>Don't sort on OBs_ID</label></td>
+     <td><input type='radio' id='sor_roioff' name='sort_roi' value='roi_off' <?php echo $roioff_checked; ?>  onchange='document.getElementById("options_form").submit();' >
+     <label for='sor_roioff'>Don't sort on ROI</label></td>
 
-
-<button type='submit'>Submit</button>
+   </tr>
+   <tr>
+     <td><input type='radio' id='ins_susi' name='instrument' value='SUSI' <?php echo $susi_checked; ?> onchange='document.getElementById("options_form").submit();' >
+     <label for='ins_susi'>SUSI</label>
+     <td><input type='radio' id='sor_obsasc' name='sort_obs' value='obs_asc' <?php echo $obsasc_checked; ?>  onchange='document.getElementById("options_form").submit();' >
+     <label for='sor_obsasc'>Sort on OBs_ID asc</label></td>
+     <td><input type='radio' id='sor_roi' name='sort_roi' value='roi_desc' <?php echo $roidesc_checked; ?>  onchange='document.getElementById("options_form").submit();' >
+     <label for='sor_roidesc'>Sort on ROI desc</label></td>
+   </tr>
+   <tr>
+   
+     <td><input type='radio' id='ins_scip' name='instrument' value='SCIP' <?php echo $scip_checked; ?> onchange='document.getElementById("options_form").submit();' >
+      <label for='ins_scip'>SCIP</label></td>
+     <td><input type='radio' id='sor_obsdesc' name='sort_obs' value='obs_desc' <?php echo $obsdesc_checked; ?>  onchange='document.getElementById("options_form").submit();' >
+     <label for='sor_obsdesc'>Sort on OBs_ID desc</label></td>
+     <td><input type='radio' id='sor_roiasc' name='sort_roi' value='roi_asc' <?php echo $roiasc_checked; ?>  onchange='document.getElementById("options_form").submit();' >
+     <label for='sor_roiasc'>Sort on ROI asc</label></td>
+   </tr>
+   <tr>
+     <td><input type='radio' id='ins_tumag' name='instrument' value='TuMag' <?php echo $tumag_checked; ?> onchange='document.getElementById("options_form").submit();' >
+   <label for='ins_obs'>TuMag</label></td>
+   </tr>
+   <tr>
+      <td><button type='submit'>Submit</button></td>
+   </tr>
+  </table>
   
   
 </form>
 </span>
 
 <?php 
-$data_line_OBSERV = [];
-$data_line_SUSI = [];
-$data_line_SCIP = [];
-$data_line_TUMAG = [];
+
 
 $csv_data = [];
 read_csv_data($csv_data, $start_time, $end_time);
-$OBS_ID = "SC_0";
+sort_csv_data($csv_data, $_GET['sort_roi'], $_GET['sort_obs']);
 
 // ---------------------------------------------------------------------------
 // ----------------------- Output: Observations ------------------------------
@@ -105,19 +158,19 @@ $OBS_ID = "SC_0";
 #$max_lines = 6;
 $max_lines = 1000;
 if ($observ_checked == "checked") {
-   $observ_html = table_HTML($csv_data, "Observations", $cur_time, $start_time, $end_time, $max_lines);
+   $observ_html = table_HTML($csv_data, "Observations", $cur_time,  $max_lines);
    echo $observ_html;
 }
 if ($susi_checked == "checked") {
-   $susi_html = table_HTML($csv_data, "SUSI", $cur_time, $start_time, $end_time, $max_lines);
+   $susi_html = table_HTML($csv_data, "SUSI", $cur_time,  $max_lines);
    echo $susi_html;
 }
 if ($scip_checked == "checked") {
-   $scip_html = table_HTML($csv_data, "SCIP", $cur_time, $start_time, $end_time, $max_lines);
+   $scip_html = table_HTML($csv_data, "SCIP", $cur_time,  $max_lines);
    echo $scip_html;
 }
 if ($tumag_checked == "checked") {
-   $tumag_html = table_HTML($csv_data, "TuMag", $cur_time, $start_time, $end_time, $max_lines);
+   $tumag_html = table_HTML($csv_data, "TuMag", $cur_time,  $max_lines);
    echo $tumag_html;
 }
 
