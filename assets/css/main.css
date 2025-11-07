@@ -1707,6 +1707,10 @@
 		font-weight: 800;
         color: rgb(7,30,130);
 	}
+	.pub-number {
+		font-weight: bold;
+		color: #d35400; /* Orange color for publication numbers */
+	}
 	ads {
 		font-weight: 600;
         color: rgb(75,0,130);
