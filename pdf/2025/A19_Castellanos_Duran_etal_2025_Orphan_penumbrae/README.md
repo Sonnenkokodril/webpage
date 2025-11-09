@@ -17,7 +17,3 @@ Orphan penumbrae (OPU) are features resembling sunspot penumbrae, but are not co
 **Links:**
 - ADS: https://ui.adsabs.harvard.edu/abs/2025A%26A...701A..49C/abstract
 - arXiv: https://arxiv.org/abs/2507.08117
-
-**Description:** First-author study on the magnetic properties of orphan penumbrae using Hinode spectropolarimetric observations.
-
-**Note:** This is another first-author publication! 🌟

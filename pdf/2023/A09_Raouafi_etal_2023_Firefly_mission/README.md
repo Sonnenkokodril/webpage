@@ -14,3 +14,7 @@
 **Links:**
 - ADS: https://ui.adsabs.harvard.edu/abs/2023BAAS...55c.333R/abstract
 - Publication: https://baas.aas.org/pub/2023n3i333/release/1
+
+
+**Abstract**
+This white paper is on the HMCS Firefly mission concept study. Firefly focuses on the global structure and dynamics of the Sun's interior, the generation of solar magnetic fields, the deciphering of the solar cycle, the conditions leading to the explosive activity, and the structure and dynamics of the corona as it drives the heliosphere.
