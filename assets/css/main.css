@@ -9006,3 +9006,15 @@ a.arxiv:hover {color:#f1c40f;
 	0% { transform: rotate(0deg); }
 	100% { transform: rotate(360deg); }
 }
+
+/* Custom gallery image frames */
+.gallery.style1 article .image img,
+.gallery.style2 article .image img {
+	border: 1px solid rgba(255, 255, 255, 0.2);
+	box-sizing: border-box;
+}
+
+.gallery.style1 article:hover .image img,
+.gallery.style2 article:hover .image img {
+	border-color: rgba(255, 255, 255, 0.4);
+}
