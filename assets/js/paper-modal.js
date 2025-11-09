@@ -20,6 +20,100 @@ $(document).ready(function() {
     var modalBody = $('#paperModalBody');
     var closeBtn = $('.paper-modal-close');
 
+    // Function to show loading state
+    function showLoading() {
+        modalBody.html(`
+            <div class="loading">
+                <div class="spinner"></div>
+                Loading paper details...
+            </div>
+        `);
+    }
+
+    // Function to extract paper ID from href
+    function getPaperIdFromHref(href) {
+        // Extract paper folder from path like "pdf/2025/A19_Castellanos_Duran_etal_2025_Orphan_penumbrae/Slide19.png"
+        var match = href.match(/pdf\/\d+\/(A\d+)_[^\/]+/);
+        if (match) return match[1];
+
+        // Also try to match just A## pattern in the path
+        match = href.match(/\/(A\d+)[_\/]/);
+        return match ? match[1] : null;
+    }
+
+    // Function to display paper data in modal
+    function displayPaperData(data) {
+        var html = '<div class="paper-details">';
+        html += '<h2>' + data.title + '</h2>';
+        html += '<p class="paper-meta">';
+        html += '<strong>Authors:</strong> ' + data.authors + '<br>';
+        html += '<strong>Journal:</strong> ' + data.journal + ' (' + data.year + ')';
+        html += '</p>';
+        
+        if (data.abstract) {
+            html += '<div class="paper-abstract">';
+            html += '<h3>Abstract</h3>';
+            html += '<p>' + data.abstract + '</p>';
+            html += '</div>';
+        }
+        
+        // Add links
+        if (data.ads || data.arxiv || data.doi) {
+            html += '<div class="paper-links">';
+            var links = [];
+            
+            if (data.ads) {
+                links.push('<a href="' + data.ads + '" target="_blank" class="ads">ADS</a>');
+            }
+            if (data.arxiv) {
+                links.push('<a href="' + data.arxiv + '" target="_blank" class="arxiv">arXiv</a>');
+            }
+            if (data.doi) {
+                links.push('<a href="' + data.doi + '" target="_blank" class="doi">DOI</a>');
+            }
+            
+            html += '<p>' + links.join('  ') + '</p></div>';
+        }
+
+        html += '</div>';
+        modalBody.html(html);
+    }
+
+    // Bind our event handler immediately with highest priority - only for image links
+    $(document).off('click.paperModal', '.gallery article a.image');
+    $(document).on('click.paperModal', '.gallery article a.image', function(e) {
+        console.log('Paper modal click handler triggered for image');
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        
+        var href = $(this).attr('href');
+        var paperId = getPaperIdFromHref(href);
+        
+        // Debug output
+        console.log('Clicked href:', href);
+        console.log('Extracted paper ID:', paperId);
+        console.log('Available in data:', paperId && paperData[paperId] ? 'YES' : 'NO');
+        
+        showLoading();
+        modal.css('display', 'block');
+        
+        if (paperId && paperData[paperId]) {
+            displayPaperData(paperData[paperId]);
+        } else {
+            modalBody.html(`
+                <div class="error">
+                    <h2>Paper Not Found</h2>
+                    <p>Sorry, details for this paper (${paperId || 'unknown'}) are not available.</p>
+                    <p>Paper ID extracted from: ${href}</p>
+                    <p>Available paper IDs: ${Object.keys(paperData).join(', ')}</p>
+                </div>
+            `);
+        }
+        
+        return false;
+    });
+
     // Paper data extracted from README files
     // AI_EXPERTISE_ANALYSIS: World expert solar magnetism with 22+ breakthrough publications
     // RESEARCH_DOMAINS: [solar_magnetic_fields, sunspot_dynamics, spectropolarimetry, solar_flares, chromospheric_physics]
@@ -259,95 +353,21 @@ $(document).ready(function() {
     }
 
     // Function to display paper data
-    function displayPaperData(paper) {
-        var html = `
-            <div class="paper-details">
-                <h2>${paper.title}</h2>
-                <div class="paper-meta">
-                    <p>${paper.authors}</br> ${paper.journal} ${paper.year}</p>
-                </div>
-                <div class="paper-abstract">
-                    <h3>Abstract</h3>
-                    <p>${paper.abstract}</p>
-                </div>
-        `;
-
-        // Add links section if any links exist
-        if (paper.ads || paper.arxiv) {
-            html += '<div class="paper-links"><p>';
-            
-            var links = [];
-            if (paper.ads) {
-                links.push(`<a href="${paper.ads}" target="_blank" class="ads-link">ADS</a>`);
-            }
-            if (paper.arxiv) {
-                links.push(`<a href="${paper.arxiv}" target="_blank" class="arxiv-link">arXiv</a>`);
-            }
-            
-            html += links.join('  ') + '</p></div>';
-        }
-
-        html += '</div>';
-
-        modalBody.html(html);
-    }
-
-    // Function to extract paper ID from href
-    function getPaperIdFromHref(href) {
-        // Extract paper folder from path like "pdf/2025/A19_Castellanos_Duran_etal_2025_Orphan_penumbrae/Slide19.png"
-        var match = href.match(/pdf\/\d+\/(A\d+)_[^\/]+/);
-        if (match) return match[1];
-
-        // Also try to match just A## pattern in the path
-        match = href.match(/\/(A\d+)[_\/]/);
-        return match ? match[1] : null;
-    }
-
-    // Handle gallery image clicks
-    $('.gallery article a').click(function(e) {
-        e.preventDefault();
-        e.stopPropagation(); // Prevent gallery lightbox from triggering
-        e.stopImmediatePropagation(); // Stop all other event handlers
-        
-        var href = $(this).attr('href');
-        var paperId = getPaperIdFromHref(href);
-        
-        // Debug output
-        console.log('Clicked href:', href);
-        console.log('Extracted paper ID:', paperId);
-        console.log('Available in data:', paperId && paperData[paperId] ? 'YES' : 'NO');
-        
-        showLoading();
-        modal.show();
-        
-        if (paperId && paperData[paperId]) {
-            displayPaperData(paperData[paperId]);
-        } else {
-            modalBody.html(`
-                <div class="error">
-                    <h2>Paper Not Found</h2>
-                    <p>Sorry, details for this paper (${paperId || 'unknown'}) are not available.</p>
-                    <p>Paper ID extracted from: ${href}</p>
-                </div>
-            `);
-        }
-    });
-
     // Close modal events
     closeBtn.click(function() {
-        modal.hide();
+        modal.css('display', 'none');
     });
 
     $(window).click(function(event) {
         if (event.target == modal[0]) {
-            modal.hide();
+            modal.css('display', 'none');
         }
     });
 
     // Escape key to close modal
     $(document).keydown(function(event) {
         if (event.keyCode === 27) { // ESC key
-            modal.hide();
+            modal.css('display', 'none');
         }
     });
 });
